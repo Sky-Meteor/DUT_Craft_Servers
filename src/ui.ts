@@ -37,6 +37,24 @@ function playerNamesLabel(view: ServerViewModel): string {
   return view.playerNames.join(", ");
 }
 
+function playerNamesMarkup(view: ServerViewModel): string {
+  if (view.status !== "online") {
+    return '<span class="player-chip muted">无</span>';
+  }
+
+  if (view.playerNames.length === 0 && view.anonymousPlayerCount === 0) {
+    return '<span class="player-chip muted">暂无在线玩家</span>';
+  }
+
+  const namedChips = view.playerNames.map((name) => `<span class="player-chip">${escapeHtml(name)}</span>`);
+  const anonymousChip =
+    view.anonymousPlayerCount > 0
+      ? `<span class="player-chip muted">匿名玩家 x${view.anonymousPlayerCount}</span>`
+      : "";
+
+  return [...namedChips, anonymousChip].join("");
+}
+
 function toast(message: string): void {
   const node = document.createElement("div");
   node.className = "toast";
@@ -99,7 +117,7 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
 
     <div class="data-row players-row">
       <span class="label">在线玩家</span>
-      <span class="value">${escapeHtml(playerNamesLabel(view))}</span>
+      <span class="value" title="${escapeHtml(playerNamesLabel(view))}">${playerNamesMarkup(view)}</span>
     </div>
 
     <div class="motd" title="${escapeHtml(view.motdText)}">${view.motdHtml ?? escapeHtml(view.motdText)}</div>

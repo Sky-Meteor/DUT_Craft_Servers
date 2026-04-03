@@ -32,6 +32,7 @@ export interface ServerViewModel {
   version: string;
   playersText: string;
   playerNames: string[];
+  anonymousPlayerCount: number;
   motdText: string;
   motdHtml?: string;
   errorText?: string;

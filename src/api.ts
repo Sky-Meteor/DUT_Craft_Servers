@@ -164,13 +164,15 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
         version: "离线",
         playersText: "0 / 0",
         playerNames: [],
+        anonymousPlayerCount: 0,
         motdText: "服务器离线或不可达"
       };
     }
 
+    const playerNames = normalizePlayerNames(data.players?.list);
     const online = data.players?.online ?? 0;
     const max = data.players?.max ?? 0;
-    const playerNames = normalizePlayerNames(data.players?.list);
+    const anonymousPlayerCount = Math.max(0, online - playerNames.length);
 
     return {
       id: address,
@@ -181,6 +183,7 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
       version: data.version ?? "未知版本",
       playersText: `${online} / ${max}`,
       playerNames,
+      anonymousPlayerCount,
       motdText,
       motdHtml
     };
@@ -195,6 +198,7 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
       version: "查询失败",
       playersText: "-",
       playerNames: [],
+      anonymousPlayerCount: 0,
       motdText: "无法获取服务器状态",
       errorText: reason
     };
