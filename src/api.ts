@@ -15,7 +15,124 @@ function normalizeMotd(cleanMotd?: string[]): string {
     return "暂无 MOTD";
   }
 
-  return cleanMotd.join(" / ");
+  return cleanMotd.map((line) => decodeHtmlEntities(line)).join(" / ");
+}
+
+function decodeHtmlEntities(input: string): string {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(input, "text/html");
+  return doc.documentElement.textContent ?? input;
+}
+
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function sanitizeStyle(input: string): string {
+  const allowedProps = new Set(["color", "font-weight", "font-style", "text-decoration"]);
+  const declarations = input
+    .split(";")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+    .map((item) => {
+      const [rawProp, ...rest] = item.split(":");
+      if (!rawProp || rest.length === 0) {
+        return undefined;
+      }
+
+      const prop = rawProp.trim().toLowerCase();
+      if (!allowedProps.has(prop)) {
+        return undefined;
+      }
+
+      const value = rest.join(":").trim();
+      if (!/^[#(),.%\w\s-]+$/.test(value)) {
+        return undefined;
+      }
+
+      return `${prop}: ${value}`;
+    })
+    .filter((item): item is string => Boolean(item));
+
+  return declarations.join("; ");
+}
+
+function sanitizeMotdNode(node: ChildNode): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return escapeHtml(node.textContent ?? "");
+  }
+
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return "";
+  }
+
+  const element = node as HTMLElement;
+  const tag = element.tagName.toLowerCase();
+  const children = Array.from(element.childNodes).map(sanitizeMotdNode).join("");
+
+  if (tag === "br") {
+    return "<br>";
+  }
+
+  if (tag !== "span") {
+    return children;
+  }
+
+  const safeStyle = sanitizeStyle(element.getAttribute("style") ?? "");
+  if (!safeStyle) {
+    return `<span>${children}</span>`;
+  }
+
+  return `<span style="${escapeHtml(safeStyle)}">${children}</span>`;
+}
+
+function normalizeMotdHtml(htmlMotd?: string[]): string | undefined {
+  if (!htmlMotd || htmlMotd.length === 0) {
+    return undefined;
+  }
+
+  const parser = new DOMParser();
+  const lines = htmlMotd
+    .map((line) => {
+      const doc = parser.parseFromString(line, "text/html");
+      return Array.from(doc.body.childNodes).map(sanitizeMotdNode).join("");
+    })
+    .filter((line) => line.length > 0);
+
+  if (lines.length === 0) {
+    return undefined;
+  }
+
+  return lines.join("<br>");
+}
+
+function normalizeIcon(icon?: string): string | undefined {
+  if (!icon) {
+    return undefined;
+  }
+
+  const trimmed = icon.trim();
+  if (!trimmed.startsWith("data:image/")) {
+    return undefined;
+  }
+
+  return trimmed;
+}
+
+function normalizePlayerNames(rawList?: string[]): string[] {
+  if (!rawList || rawList.length === 0) {
+    return [];
+  }
+
+  return rawList
+    .filter((name) => typeof name === "string")
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
 }
 
 export async function fetchServerView(server: ServerTarget): Promise<ServerViewModel> {
@@ -33,30 +150,39 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
     }
 
     const data = (await response.json()) as ApiServerResponse;
+    const iconDataUrl = normalizeIcon(data.icon);
+    const motdHtml = normalizeMotdHtml(data.motd?.html);
+    const motdText = normalizeMotd(data.motd?.clean);
 
     if (!data.online) {
       return {
         id: address,
         name: server.name,
         address,
+        iconDataUrl,
         status: "offline",
         version: "离线",
         playersText: "0 / 0",
+        playerNames: [],
         motdText: "服务器离线或不可达"
       };
     }
 
     const online = data.players?.online ?? 0;
     const max = data.players?.max ?? 0;
+    const playerNames = normalizePlayerNames(data.players?.list);
 
     return {
       id: address,
       name: server.name,
       address,
+      iconDataUrl,
       status: "online",
       version: data.version ?? "未知版本",
       playersText: `${online} / ${max}`,
-      motdText: normalizeMotd(data.motd?.clean)
+      playerNames,
+      motdText,
+      motdHtml
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : "未知错误";
@@ -68,6 +194,7 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
       status: "error",
       version: "查询失败",
       playersText: "-",
+      playerNames: [],
       motdText: "无法获取服务器状态",
       errorText: reason
     };

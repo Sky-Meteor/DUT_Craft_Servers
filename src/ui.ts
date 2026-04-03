@@ -25,6 +25,18 @@ function statusLabel(status: ServerViewModel["status"]): string {
   return "错误";
 }
 
+function playerNamesLabel(view: ServerViewModel): string {
+  if (view.status !== "online") {
+    return "无";
+  }
+
+  if (view.playerNames.length === 0) {
+    return "暂无在线玩家";
+  }
+
+  return view.playerNames.join(", ");
+}
+
 function toast(message: string): void {
   const node = document.createElement("div");
   node.className = "toast";
@@ -43,7 +55,10 @@ export function renderLoadingCard(parent: HTMLElement, id: string, name: string,
   card.dataset.serverId = id;
   card.innerHTML = `
     <header class="card-head">
-      <h2>${escapeHtml(name)}</h2>
+      <div class="title-wrap">
+        <span class="server-icon placeholder" aria-hidden="true"></span>
+        <h2>${escapeHtml(name)}</h2>
+      </div>
       <span class="status-pill loading">加载中</span>
     </header>
     <p class="address">${escapeHtml(address)}</p>
@@ -61,7 +76,14 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
   card.dataset.serverId = view.id;
   card.innerHTML = `
     <header class="card-head">
-      <h2>${escapeHtml(view.name)}</h2>
+      <div class="title-wrap">
+        ${
+          view.iconDataUrl
+            ? `<img class="server-icon" src="${escapeHtml(view.iconDataUrl)}" alt="${escapeHtml(view.name)} 图标" loading="lazy" />`
+            : '<span class="server-icon placeholder" aria-hidden="true"></span>'
+        }
+        <h2>${escapeHtml(view.name)}</h2>
+      </div>
       <span class="status-pill ${view.status}">${statusLabel(view.status)}</span>
     </header>
 
@@ -75,11 +97,19 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
       <span class="value">${escapeHtml(view.version)}</span>
     </div>
 
-    <div class="motd" title="${escapeHtml(view.motdText)}">${escapeHtml(view.motdText)}</div>
+    <div class="data-row players-row">
+      <span class="label">在线玩家</span>
+      <span class="value">${escapeHtml(playerNamesLabel(view))}</span>
+    </div>
+
+    <div class="motd" title="${escapeHtml(view.motdText)}">${view.motdHtml ?? escapeHtml(view.motdText)}</div>
 
     <div class="copy-row">
       <span class="address">${escapeHtml(view.address)}</span>
-      <button class="copy-btn" type="button" aria-label="复制服务器地址 ${escapeHtml(view.address)}">复制地址</button>
+      <div class="button-row">
+        <button class="copy-btn" type="button" aria-label="复制服务器地址 ${escapeHtml(view.address)}">复制地址</button>
+        <button class="refresh-card-btn" type="button" aria-label="刷新服务器 ${escapeHtml(view.name)}">刷新</button>
+      </div>
     </div>
 
     ${view.errorText ? `<p class="error-text">${escapeHtml(view.errorText)}</p>` : ""}

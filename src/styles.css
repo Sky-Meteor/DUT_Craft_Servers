@@ -95,7 +95,7 @@ body {
 
 .server-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(520px, 100%), 1fr));
   gap: 1.15rem;
 }
 
@@ -111,6 +111,7 @@ body {
   color: #bce9ff;
   font-family: "Space Mono", monospace;
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .api-link:hover {
@@ -145,9 +146,30 @@ body {
   gap: 0.4rem;
 }
 
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.server-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.server-icon.placeholder {
+  background: linear-gradient(135deg, rgba(130, 185, 230, 0.42), rgba(92, 211, 255, 0.2));
+}
+
 .card-head h2 {
   margin: 0;
   font-size: 1.06rem;
+  overflow-wrap: anywhere;
 }
 
 .status-pill {
@@ -193,6 +215,11 @@ body {
   font-family: "Space Mono", monospace;
 }
 
+.players-row .value {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
 .motd {
   margin-top: 0.78rem;
   color: #ecf2ff;
@@ -214,6 +241,12 @@ body {
   gap: 0.56rem;
 }
 
+.button-row {
+  display: flex;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+}
+
 .address {
   font-family: "Space Mono", monospace;
   font-size: 0.82rem;
@@ -221,7 +254,8 @@ body {
   overflow-wrap: anywhere;
 }
 
-.copy-btn {
+.copy-btn,
+.refresh-card-btn {
   flex: 0 0 auto;
   border: 1px solid rgba(255, 255, 255, 0.33);
   color: var(--text);
@@ -231,7 +265,8 @@ body {
   cursor: pointer;
 }
 
-.copy-btn:hover {
+.copy-btn:hover,
+.refresh-card-btn:hover {
   border-color: #fff;
 }
 
@@ -303,12 +338,28 @@ body {
     padding-top: 2.2rem;
   }
 
+  .server-grid {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  .card-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .copy-row {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .copy-btn {
+  .button-row {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .copy-btn,
+  .refresh-card-btn {
     width: 100%;
   }
 }

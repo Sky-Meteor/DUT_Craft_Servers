@@ -8,13 +8,16 @@ export interface ApiServerResponse {
   online: boolean;
   ip?: string;
   port?: number;
+  icon?: string;
   version?: string;
   players?: {
     online?: number;
     max?: number;
+    list?: string[];
   };
   motd?: {
     clean?: string[];
+    html?: string[];
   };
 }
 
@@ -24,9 +27,12 @@ export interface ServerViewModel {
   id: string;
   name: string;
   address: string;
+  iconDataUrl?: string;
   status: ServerUiStatus;
   version: string;
   playersText: string;
+  playerNames: string[];
   motdText: string;
+  motdHtml?: string;
   errorText?: string;
 }

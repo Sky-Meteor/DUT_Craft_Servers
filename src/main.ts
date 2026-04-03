@@ -1,6 +1,6 @@
 import { loadServerList, toAddress } from "./config";
 import { fetchServerView } from "./api";
-import type { ServerTarget } from "./types";
+import type { ServerTarget, ServerViewModel } from "./types";
 import { renderLoadingCard, upsertServerCard } from "./ui";
 
 const boardNode = document.querySelector<HTMLElement>("#status-board");
@@ -14,6 +14,7 @@ const board = boardNode;
 const refreshButton = refreshButtonNode;
 let activeServerList: ServerTarget[] = [];
 let activeServerSignature = "";
+let latestViews: ServerViewModel[] = [];
 
 function serverSignature(list: ServerTarget[]): string {
   return list.map((server) => `${server.name}|${toAddress(server)}`).join("||");
@@ -38,6 +39,58 @@ async function syncServerList(): Promise<boolean> {
   return changed;
 }
 
+function activityPriority(view: ServerViewModel): number {
+  if (view.status === "online") {
+    return view.playerNames.length > 0 ? 0 : 1;
+  }
+
+  return 2;
+}
+
+function sortViews(views: ServerViewModel[]): ServerViewModel[] {
+  const indexByAddress = new Map(activeServerList.map((item, index) => [toAddress(item), index]));
+
+  return views.sort((left, right) => {
+    const leftPriority = activityPriority(left);
+    const rightPriority = activityPriority(right);
+    if (leftPriority !== rightPriority) {
+      return leftPriority - rightPriority;
+    }
+
+    const leftIndex = indexByAddress.get(left.id) ?? Number.MAX_SAFE_INTEGER;
+    const rightIndex = indexByAddress.get(right.id) ?? Number.MAX_SAFE_INTEGER;
+    if (leftIndex !== rightIndex) {
+      return leftIndex - rightIndex;
+    }
+
+    return left.name.localeCompare(right.name, "zh-CN");
+  });
+}
+
+function renderSortedViews(views: ServerViewModel[]): void {
+  board.innerHTML = "";
+  for (const view of sortViews([...views])) {
+    upsertServerCard(board, view);
+  }
+}
+
+async function refreshOne(serverId: string): Promise<void> {
+  const targetServer = activeServerList.find((item) => toAddress(item) === serverId);
+  if (!targetServer) {
+    return;
+  }
+
+  const single = await fetchServerView(targetServer);
+  const existingIndex = latestViews.findIndex((item) => item.id === single.id);
+  if (existingIndex >= 0) {
+    latestViews[existingIndex] = single;
+  } else {
+    latestViews.push(single);
+  }
+
+  renderSortedViews(latestViews);
+}
+
 async function refreshAll(): Promise<void> {
   refreshButton.disabled = true;
   refreshButton.textContent = "刷新中...";
@@ -48,12 +101,11 @@ async function refreshAll(): Promise<void> {
   }
 
   const results = await Promise.allSettled(activeServerList.map((item) => fetchServerView(item)));
+  latestViews = results
+    .filter((result): result is PromiseFulfilledResult<ServerViewModel> => result.status === "fulfilled")
+    .map((result) => result.value);
 
-  for (const result of results) {
-    if (result.status === "fulfilled") {
-      upsertServerCard(board, result.value);
-    }
-  }
+  renderSortedViews(latestViews);
 
   refreshButton.disabled = false;
   refreshButton.textContent = "刷新全部服务器";
@@ -61,6 +113,33 @@ async function refreshAll(): Promise<void> {
 
 refreshButton.addEventListener("click", () => {
   void refreshAll();
+});
+
+board.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  const button = target.closest<HTMLButtonElement>(".refresh-card-btn");
+  if (!button) {
+    return;
+  }
+
+  const card = button.closest<HTMLElement>(".server-card");
+  const serverId = card?.dataset.serverId;
+  if (!serverId) {
+    return;
+  }
+
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "刷新中...";
+
+  void refreshOne(serverId).finally(() => {
+    button.disabled = false;
+    button.textContent = original;
+  });
 });
 
 void refreshAll();
