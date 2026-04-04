@@ -255,7 +255,7 @@ body {
   margin-top: 0.9rem;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.56rem;
 }
 
@@ -265,14 +265,41 @@ body {
   flex: 0 0 auto;
 }
 
+.address-list {
+  display: grid;
+  gap: 0.16rem;
+  justify-items: start;
+}
+
 .address {
+  display: block;
   font-family: "Space Mono", monospace;
   font-size: 0.82rem;
+  line-height: 1.4;
   color: #cde3ff;
   overflow-wrap: anywhere;
 }
 
-.copy-btn,
+.address-copy {
+  display: block;
+  padding: 0;
+  border: 0;
+  color: #cde3ff;
+  background: transparent;
+  font: inherit;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.address-copy:hover,
+.address-copy:focus-visible {
+  color: #f5fbff;
+  text-decoration: underline;
+  outline: none;
+}
+
 .refresh-card-btn {
   flex: 0 0 auto;
   border: 1px solid rgba(255, 255, 255, 0.33);
@@ -283,7 +310,6 @@ body {
   cursor: pointer;
 }
 
-.copy-btn:hover,
 .refresh-card-btn:hover {
   border-color: #fff;
 }
@@ -380,7 +406,6 @@ body {
     flex-direction: column;
   }
 
-  .copy-btn,
   .refresh-card-btn {
     width: 100%;
   }

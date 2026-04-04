@@ -55,6 +55,19 @@ function playerNamesMarkup(view: ServerViewModel): string {
   return [...namedChips, anonymousChip].join("");
 }
 
+function addressTitle(addresses: string[]): string {
+  return addresses.join("\n");
+}
+
+function addressMarkup(addresses: string[]): string {
+  return addresses
+    .map(
+      (item) =>
+        `<button class="address-copy" type="button" data-copy-address="${escapeHtml(item)}" aria-label="复制服务器地址 ${escapeHtml(item)}">${escapeHtml(item)}</button>`
+    )
+    .join("");
+}
+
 function toast(message: string): void {
   const node = document.createElement("div");
   node.className = "toast";
@@ -67,7 +80,7 @@ function toast(message: string): void {
   }, 1400);
 }
 
-export function renderLoadingCard(parent: HTMLElement, id: string, name: string, address: string): void {
+export function renderLoadingCard(parent: HTMLElement, id: string, name: string, addresses: string[]): void {
   const card = document.createElement("article");
   card.className = "server-card loading";
   card.dataset.serverId = id;
@@ -79,7 +92,7 @@ export function renderLoadingCard(parent: HTMLElement, id: string, name: string,
       </div>
       <span class="status-pill loading">加载中</span>
     </header>
-    <p class="address">${escapeHtml(address)}</p>
+    <p class="address" title="${escapeHtml(addressTitle(addresses))}">${addresses.map((item) => escapeHtml(item)).join("<br>")}</p>
     <div class="line shimmer"></div>
     <div class="line shimmer short"></div>
   `;
@@ -123,9 +136,8 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
     <div class="motd" title="${escapeHtml(view.motdText)}">${view.motdHtml ?? escapeHtml(view.motdText)}</div>
 
     <div class="copy-row">
-      <span class="address">${escapeHtml(view.address)}</span>
+      <div class="address-list" title="${escapeHtml(addressTitle(view.addresses))}">${addressMarkup(view.addresses)}</div>
       <div class="button-row">
-        <button class="copy-btn" type="button" aria-label="复制服务器地址 ${escapeHtml(view.address)}">复制地址</button>
         <button class="refresh-card-btn" type="button" aria-label="刷新服务器 ${escapeHtml(view.name)}">刷新</button>
       </div>
     </div>
@@ -137,12 +149,13 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
     parent.appendChild(card);
   }
 
-  const copyBtn = card.querySelector<HTMLButtonElement>(".copy-btn");
-  if (copyBtn) {
-    copyBtn.onclick = async () => {
+  const addressButtons = card.querySelectorAll<HTMLButtonElement>(".address-copy");
+  for (const button of addressButtons) {
+    button.onclick = async () => {
+      const value = button.dataset.copyAddress ?? view.address;
       try {
-        await navigator.clipboard.writeText(view.address);
-        toast(`已复制: ${view.address}`);
+        await navigator.clipboard.writeText(value);
+        toast(`已复制: ${value}`);
       } catch {
         toast("复制失败，请手动复制");
       }

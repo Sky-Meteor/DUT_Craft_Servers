@@ -1,45 +1,105 @@
 [
   {
     "name": "DUT_Craft 大厅",
-    "host": "lobby.unsafe.top"
+    "address": [
+      {
+        "host": "lobby.unsafe.top",
+        "port": 25565
+      }
+    ]
   },
   {
     "name": "DUT_Craft 建筑服",
-    "host": "building.unsafe.top"
+    "address": [
+      {
+        "host": "building.unsafe.top",
+        "port": 25565
+      }
+    ]
   },
   {
     "name": "DUT_Craft 速通服",
-    "host": "speedrun.unsafe.top"
+    "address": [
+      {
+        "host": "speedrun.unsafe.top",
+        "port": 25565
+      }
+    ]
   },
   {
     "name": "DUT_Craft 生存服",
-    "host": "survival.unsafe.top"
+    "address": [
+      {
+        "host": "survival.unsafe.top",
+        "port": 25565
+      }
+    ]
   },
   {
     "name": "DUT_Craft 愚人节",
-    "host": "mchk.unsafe.top",
-    "port": 25567
+    "address": [
+      {
+        "host": "mchk.unsafe.top",
+        "port": 25567
+      }
+    ]
   },
   {
     "name": "DUT_Craft 逆转未来",
-    "host": "mchk.unsafe.top",
-    "port": 25563
+    "address": [
+      {
+        "host": "mchk.unsafe.top",
+        "port": 25563
+      }
+    ]
   },
   {
     "name": "DUT_Craft 工地服",
-    "host": "earth.unsafe.top"
+    "address": [
+      {
+        "host": "earth.unsafe.top",
+        "port": 25565
+      }
+    ]
   },
   {
     "name": "DUT_Craft 幸运方块",
-    "host": "lucky.unsafe.top"
+    "address": [
+      {
+        "host": "lucky.unsafe.top",
+        "port": 25565
+      }
+    ]
   },
   {
     "name": "DUT_Craft 小游戏服",
-    "host": "lts.unsafe.top"
+    "address": [
+      {
+        "host": "lts.unsafe.top",
+        "port": 25565
+      }
+    ]
   },
   {
     "name": "示例离线服",
-    "host": "herobrine.net",
-    "port": 25565
+    "address": [
+      {
+        "host": "herobrine.net",
+        "port": 25565
+      }
+    ]
+  },
+  {
+    "name": "DUT_Craft 测试服",
+    "address": [
+      {
+        "host": "test.unsafe.top",
+        "port": 25565
+      },
+      {
+        "host": "test2.unsafe.top",
+        "port": 25566
+      }
+    ]
   }
 ]

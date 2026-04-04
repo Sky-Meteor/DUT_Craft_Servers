@@ -1,5 +1,5 @@
 import type { ApiServerResponse, ServerTarget, ServerViewModel } from "./types";
-import { toAddress } from "./config";
+import { getPrimaryAddress, getServerId, toAddressList } from "./config";
 
 const API_BASE = "https://api.mcsrvstat.us/2";
 const REQUEST_TIMEOUT_MS = 8000;
@@ -29,7 +29,7 @@ function escapeHtml(input: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
+    .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
 
@@ -136,7 +136,9 @@ function normalizePlayerNames(rawList?: string[]): string[] {
 }
 
 export async function fetchServerView(server: ServerTarget): Promise<ServerViewModel> {
-  const address = toAddress(server);
+  const id = getServerId(server);
+  const addresses = toAddressList(server);
+  const address = getPrimaryAddress(server);
   const controller = withTimeout(REQUEST_TIMEOUT_MS);
 
   try {
@@ -156,9 +158,10 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
 
     if (!data.online) {
       return {
-        id: address,
+        id,
         name: server.name,
         address,
+        addresses,
         iconDataUrl,
         status: "offline",
         version: "离线",
@@ -175,9 +178,10 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
     const anonymousPlayerCount = Math.max(0, online - playerNames.length);
 
     return {
-      id: address,
+      id,
       name: server.name,
       address,
+      addresses,
       iconDataUrl,
       status: "online",
       version: data.version ?? "未知版本",
@@ -191,9 +195,10 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
     const reason = error instanceof Error ? error.message : "未知错误";
 
     return {
-      id: address,
+      id,
       name: server.name,
       address,
+      addresses,
       status: "error",
       version: "查询失败",
       playersText: "-",

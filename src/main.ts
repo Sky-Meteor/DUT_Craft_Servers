@@ -1,4 +1,4 @@
-import { loadServerList, toAddress } from "./config";
+import { getServerId, loadServerList, toAddressList } from "./config";
 import { fetchServerView } from "./api";
 import type { ServerTarget, ServerViewModel } from "./types";
 import { renderLoadingCard, upsertServerCard } from "./ui";
@@ -17,14 +17,13 @@ let activeServerSignature = "";
 let latestViews: ServerViewModel[] = [];
 
 function serverSignature(list: ServerTarget[]): string {
-  return list.map((server) => `${server.name}|${toAddress(server)}`).join("||");
+  return list.map(getServerId).join("||");
 }
 
 function renderInitialLoading(list: ServerTarget[]): void {
   board.innerHTML = "";
   for (const server of list) {
-    const address = toAddress(server);
-    renderLoadingCard(board, address, server.name, address);
+    renderLoadingCard(board, getServerId(server), server.name, toAddressList(server));
   }
 }
 
@@ -48,7 +47,7 @@ function activityPriority(view: ServerViewModel): number {
 }
 
 function sortViews(views: ServerViewModel[]): ServerViewModel[] {
-  const indexByAddress = new Map(activeServerList.map((item, index) => [toAddress(item), index]));
+  const indexById = new Map(activeServerList.map((item, index) => [getServerId(item), index]));
 
   return views.sort((left, right) => {
     const leftPriority = activityPriority(left);
@@ -57,8 +56,8 @@ function sortViews(views: ServerViewModel[]): ServerViewModel[] {
       return leftPriority - rightPriority;
     }
 
-    const leftIndex = indexByAddress.get(left.id) ?? Number.MAX_SAFE_INTEGER;
-    const rightIndex = indexByAddress.get(right.id) ?? Number.MAX_SAFE_INTEGER;
+    const leftIndex = indexById.get(left.id) ?? Number.MAX_SAFE_INTEGER;
+    const rightIndex = indexById.get(right.id) ?? Number.MAX_SAFE_INTEGER;
     if (leftIndex !== rightIndex) {
       return leftIndex - rightIndex;
     }
@@ -75,7 +74,7 @@ function renderSortedViews(views: ServerViewModel[]): void {
 }
 
 async function refreshOne(serverId: string): Promise<void> {
-  const targetServer = activeServerList.find((item) => toAddress(item) === serverId);
+  const targetServer = activeServerList.find((item) => getServerId(item) === serverId);
   if (!targetServer) {
     return;
   }
