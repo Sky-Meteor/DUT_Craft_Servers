@@ -1,7 +1,12 @@
-export interface ServerTarget {
-  name: string;
+export interface ServerAddressTarget {
+  id?: string;
   host: string;
   port?: number;
+}
+
+export interface ServerTarget {
+  name: string;
+  address: ServerAddressTarget[];
 }
 
 export interface ApiServerResponse {
@@ -27,6 +32,7 @@ export interface ServerViewModel {
   id: string;
   name: string;
   address: string;
+  addresses: string[];
   iconDataUrl?: string;
   status: ServerUiStatus;
   version: string;
