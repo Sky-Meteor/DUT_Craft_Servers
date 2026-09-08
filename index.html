@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DUT_Craft · 服务器机房</title>
+    <title>DUT Craft · 服务器状态</title>
     <link rel="stylesheet" href="/src/styles.css" />
     <!-- 防 FOUC：在样式应用前根据存储/系统偏好锁定主题（与 theme.ts 共用 key "dutcraft-theme"） -->
     <script>
@@ -20,58 +20,43 @@
     </script>
   </head>
   <body>
-    <!-- 噪点颗粒覆层：给两种主题都加上一层材质 -->
+    <!-- 极淡噪点，给两面主题都加一层纸感 -->
     <div class="grain" aria-hidden="true"></div>
 
-    <main class="room">
-      <!-- 配置告警胶带：servers.json 加载失败或含无效条目时由 main.ts 填充 -->
-      <div id="config-banner" class="alarm-tape" hidden></div>
+    <main class="page">
+      <!-- 配置提示：servers.json 加载失败或含无效条目时由 main.ts 填充 -->
+      <div id="config-banner" class="notice" hidden></div>
 
-      <header class="console">
-        <div class="console-top">
-          <div class="nameplate">
-            <h1>DUT_CRAFT</h1>
-            <p class="plate-sub"><span class="sub-cn">服务器状态机房</span><span class="sub-en">REDSTONE&nbsp;SERVER&nbsp;ROOM</span></p>
-          </div>
-          <div class="console-side">
-            <div class="clock" role="timer" aria-label="值班时钟">
-              <span id="clock-time" class="clock-time">--:--:--</span>
-            </div>
-            <button id="theme-toggle" class="shift-toggle" type="button" aria-label="切换明暗主题（交接班）" title="切换明暗主题（交接班）">
-              <span class="shift-led" aria-hidden="true"></span>
-              <span id="shift-name" class="shift-name">夜班</span>
-            </button>
-          </div>
+      <header class="masthead">
+        <div class="masthead-main">
+          <p class="overline">服务器状态 · LIVE STATUS</p>
+          <h1>DUT <em>Craft</em></h1>
         </div>
-
-        <div class="console-stats">
-          <div class="stat">
-            <span class="stat-value" id="stat-units">--</span>
-            <span class="stat-label">设备 UNITS</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value" id="stat-online">--</span>
-            <span class="stat-label">在线 ONLINE</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value" id="stat-players">--</span>
-            <span class="stat-label">玩家 PLAYERS</span>
-          </div>
-          <div class="sync-block">
-            <button id="refresh-all" class="sync-all" type="button" aria-label="刷新所有服务器状态">
-              <span class="sync-glyph" aria-hidden="true">⟳</span>同步全部
-            </button>
-            <span id="last-sync" class="last-sync">上次同步 --:--:--</span>
-          </div>
+        <div class="masthead-side">
+          <span id="clock-time" class="clock" role="timer" aria-label="当前时间">--:--:--</span>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换深浅主题" title="切换深浅主题">
+            <span class="theme-glyph" aria-hidden="true">◐</span>
+            <span id="shift-name" class="theme-name">深色</span>
+          </button>
         </div>
       </header>
 
-      <section class="rack" id="status-board" aria-live="polite"></section>
+      <section class="summary">
+        <div class="summary-stats">
+          <span class="sum"><b id="stat-units">--</b><i>服务器</i></span>
+          <span class="sum"><b id="stat-online">--</b><i>在线</i></span>
+          <span class="sum"><b id="stat-players">--</b><i>玩家</i></span>
+        </div>
+        <div class="summary-actions">
+          <span id="last-sync" class="last-sync">上次同步 --:--:--</span>
+          <button id="refresh-all" class="sync" type="button" aria-label="刷新所有服务器状态">↻ 同步</button>
+        </div>
+      </section>
 
-      <footer class="room-footer">
-        <span class="footer-pair"><span class="footer-key">DATA</span>api.mcsrvstat.us</span>
-        <span class="footer-pair"><span class="footer-key">CACHE</span>接口约缓存 5 分钟，数据未必实时</span>
-        <span class="footer-pair"><span class="footer-key">SHIFT</span>夜班 · 白班 轮值中</span>
+      <section class="board" id="status-board" aria-live="polite"></section>
+
+      <footer class="page-foot">
+        <span>数据来自 api.mcsrvstat.us · 约有数分钟缓存</span>
       </footer>
     </main>
 

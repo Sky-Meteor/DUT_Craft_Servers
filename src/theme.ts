@@ -1,4 +1,4 @@
-// 主题切换：夜班 NIGHT SHIFT（dark）/ 白班 DAY SHIFT（light）
+// 主题切换：深色（暖夜）/ 浅色（暖纸）
 // 偏好持久化于 localStorage（key 与 index.html 的防 FOUC 脚本共用 "dutcraft-theme"），
 // 未存储时跟随系统 prefers-color-scheme。
 
@@ -6,9 +6,9 @@ export type Theme = "dark" | "light";
 
 const STORAGE_KEY = "dutcraft-theme";
 
-const SHIFT_NAME: Record<Theme, string> = {
-  dark: "夜班",
-  light: "白班"
+const THEME_NAME: Record<Theme, string> = {
+  dark: "深色",
+  light: "浅色"
 };
 
 function resolveStored(): Theme | undefined {
@@ -37,7 +37,7 @@ function applyTheme(theme: Theme): void {
 
   const nameNode = document.getElementById("shift-name");
   if (nameNode) {
-    nameNode.textContent = SHIFT_NAME[theme];
+    nameNode.textContent = THEME_NAME[theme];
   }
 }
 
