@@ -9,13 +9,15 @@ initThemeToggle();
 
 const boardNode = document.querySelector<HTMLElement>("#status-board");
 const refreshButtonNode = document.querySelector<HTMLButtonElement>("#refresh-all");
+const configBannerNode = document.querySelector<HTMLElement>("#config-banner");
 
-if (!boardNode || !refreshButtonNode) {
+if (!boardNode || !refreshButtonNode || !configBannerNode) {
   throw new Error("页面初始化失败：缺少必要 DOM 节点");
 }
 
 const board = boardNode;
 const refreshButton = refreshButtonNode;
+const configBanner = configBannerNode;
 let activeServerList: ServerTarget[] = [];
 let activeServerSignature = "";
 let latestViews: ServerViewModel[] = [];
@@ -27,17 +29,32 @@ function serverSignature(list: ServerTarget[]): string {
 function renderInitialLoading(list: ServerTarget[]): void {
   board.innerHTML = "";
   for (const server of list) {
-    renderLoadingCard(board, getServerId(server), server.name, toAddressList(server));
+    renderLoadingCard(board, getServerId(server), server.name, toAddressList(server), server.note);
   }
 }
 
+/** 配置问题横幅：fallback 时为 error 级，仅条目被忽略时为 warning 级。 */
+function updateConfigBanner(level: "error" | "warning" | null, text?: string): void {
+  if (!level || !text) {
+    configBanner.hidden = true;
+    configBanner.className = "config-banner";
+    configBanner.textContent = "";
+    return;
+  }
+
+  configBanner.hidden = false;
+  configBanner.className = `config-banner ${level}`;
+  configBanner.textContent = text;
+}
+
 async function syncServerList(): Promise<boolean> {
-  const loaded = await loadServerList();
-  const nextSignature = serverSignature(loaded);
+  const { servers, usedFallback, problemText } = await loadServerList();
+  const nextSignature = serverSignature(servers);
   const changed = nextSignature !== activeServerSignature;
 
-  activeServerList = loaded;
+  activeServerList = servers;
   activeServerSignature = nextSignature;
+  updateConfigBanner(usedFallback ? "error" : problemText ? "warning" : null, problemText);
 
   return changed;
 }

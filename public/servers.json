@@ -1,100 +1,50 @@
 [
   {
     "name": "DUT_Craft 大厅",
-    "address": [
-      {
-        "host": "lobby.unsafe.top",
-        "port": 25565
-      }
-    ]
+    "address": "lobby.unsafe.top"
   },
   {
     "name": "DUT_Craft 建筑服",
-    "address": [
-      {
-        "host": "building.unsafe.top",
-        "port": 25565
-      }
-    ]
+    "address": "building.unsafe.top"
   },
   {
     "name": "DUT_Craft 速通服",
-    "address": [
-      {
-        "host": "speedrun.unsafe.top",
-        "port": 25565
-      }
-    ]
+    "address": "speedrun.unsafe.top"
   },
   {
     "name": "DUT_Craft 生存服",
-    "address": [
-      {
-        "host": "survival.unsafe.top",
-        "port": 25565
-      }
-    ]
+    "address": "survival.unsafe.top"
   },
   {
     "name": "DUT_Craft 整合猫",
     "address": [
-      {
-        "host": "hz.utf-8.fun",
-        "port": 25563
-      },
-      {
-        "host": "mchk.unsafe.top",
-        "port": 25563
-      }
+      "hz.utf-8.fun:25563",
+      "mchk.unsafe.top:25563"
     ]
   },
   {
     "name": "DUT_Craft 工地服",
-    "address": [
-      {
-        "host": "earth.unsafe.top",
-        "port": 25565
-      }
-    ]
+    "address": "earth.unsafe.top"
   },
   {
     "name": "DUT_Craft 幸运方块",
-    "address": [
-      {
-        "host": "mod.unsafe.top",
-        "port": 25565
-      }
-    ]
+    "address": "mod.unsafe.top"
   },
   {
     "name": "DUT_Craft 小游戏服",
-    "address": [
-      {
-        "host": "lts.unsafe.top",
-        "port": 25565
-      }
-    ]
+    "address": "lts.unsafe.top"
   },
   {
     "name": "示例离线服",
-    "address": [
-      {
-        "host": "herobrine.net",
-        "port": 25565
-      }
-    ]
+    "address": "herobrine.net",
+    "note": "示例服务器，用于展示离线状态"
   },
   {
     "name": "DUT_Craft 测试服",
     "address": [
-      {
-        "host": "test.unsafe.top",
-        "port": 25565
-      },
-      {
-        "host": "test2.unsafe.top",
-        "port": 25566
-      }
-    ]
+      "test.unsafe.top",
+      "test2.unsafe.top:25566"
+    ],
+    "note": "测试用服务器，随时可能变动"
   }
 ]

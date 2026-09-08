@@ -366,6 +366,44 @@ body {
   padding: 4rem 0 5rem;
 }
 
+/* ----- 配置问题横幅（servers.json 加载失败 / 无效条目）----- */
+.config-banner {
+  margin: 0 0 1.5rem;
+  padding: 0.8rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  border: 1px solid transparent;
+  animation: rise 500ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.config-banner[hidden] {
+  display: none;
+}
+
+.config-banner.error {
+  border-color: rgba(232, 138, 138, 0.4);
+  background: rgba(232, 138, 138, 0.09);
+  color: var(--error);
+}
+
+.config-banner.warning {
+  border-color: rgba(243, 227, 173, 0.32);
+  background: rgba(243, 227, 173, 0.07);
+  color: var(--accent);
+}
+
+[data-theme="light"] .config-banner.error {
+  border-color: rgba(189, 110, 110, 0.4);
+  background: rgba(189, 110, 110, 0.08);
+}
+
+[data-theme="light"] .config-banner.warning {
+  border-color: rgba(176, 131, 72, 0.4);
+  background: rgba(232, 212, 180, 0.35);
+  color: var(--accent);
+}
+
 /* ----- Hero ----- */
 .hero {
   position: relative;
@@ -679,6 +717,15 @@ body {
   overflow-wrap: anywhere;
   color: var(--text);
   letter-spacing: 0.02em;
+}
+
+/* 服务器备注（servers.json 的 note 字段），显示在标题行下方 */
+.card-note {
+  margin: 0.3rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--text-faint);
+  overflow-wrap: anywhere;
 }
 
 /* ----- 状态徽章 ----- */

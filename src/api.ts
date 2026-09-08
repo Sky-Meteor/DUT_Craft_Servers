@@ -160,6 +160,7 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
       return {
         id,
         name: server.name,
+        note: server.note,
         address,
         addresses,
         iconDataUrl,
@@ -180,6 +181,7 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
     return {
       id,
       name: server.name,
+      note: server.note,
       address,
       addresses,
       iconDataUrl,
@@ -197,6 +199,7 @@ export async function fetchServerView(server: ServerTarget): Promise<ServerViewM
     return {
       id,
       name: server.name,
+      note: server.note,
       address,
       addresses,
       status: "error",

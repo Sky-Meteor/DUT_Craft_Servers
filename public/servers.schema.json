@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DUT_Craft 服务器列表",
+  "description": "public/servers.json 的格式约定，供编辑器校验与补全使用",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/server"
+  },
+  "definitions": {
+    "addressObject": {
+      "type": "object",
+      "required": ["host"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "可选，用于区分同一服务器下的多个地址"
+        },
+        "host": {
+          "type": "string",
+          "description": "服务器域名或 IP"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "可选，默认 25565"
+        }
+      }
+    },
+    "server": {
+      "type": "object",
+      "required": ["name"],
+      "anyOf": [
+        { "required": ["address"] },
+        { "required": ["host"] }
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "页面显示名称"
+        },
+        "note": {
+          "type": "string",
+          "description": "备注，显示在卡片标题下方，可当作注释使用"
+        },
+        "address": {
+          "description": "地址简写（\"host\" 或 \"host:port\"）或地址数组（字符串与对象可混用）",
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "$ref": "#/definitions/addressObject" }
+                ]
+              }
+            }
+          ]
+        },
+        "host": {
+          "type": "string",
+          "description": "旧版格式：单地址 host，建议改用 address"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "旧版格式：单地址端口，建议改用 address"
+        }
+      }
+    }
+  }
+}

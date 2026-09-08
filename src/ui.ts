@@ -100,7 +100,7 @@ function toast(message: string): void {
   }, 1400);
 }
 
-export function renderLoadingCard(parent: HTMLElement, id: string, name: string, addresses: string[]): void {
+export function renderLoadingCard(parent: HTMLElement, id: string, name: string, addresses: string[], note?: string): void {
   const card = document.createElement("article");
   card.className = "server-card loading";
   card.dataset.serverId = id;
@@ -113,6 +113,7 @@ export function renderLoadingCard(parent: HTMLElement, id: string, name: string,
         </div>
         <span class="status-pill loading"><span class="dot" aria-hidden="true"></span>加载中</span>
       </header>
+      ${note ? `<p class="card-note">${escapeHtml(note)}</p>` : ""}
       <p class="address" title="${escapeHtml(addressTitle(addresses))}">${addresses.map((item) => escapeHtml(item)).join("<br>")}</p>
       <div class="line shimmer"></div>
       <div class="line shimmer short"></div>
@@ -136,6 +137,8 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
         </div>
         <span class="status-pill ${view.status}"><span class="dot" aria-hidden="true"></span>${statusLabel(view.status)}</span>
       </header>
+
+      ${view.note ? `<p class="card-note">${escapeHtml(view.note)}</p>` : ""}
 
       <div class="data-row">
         <div class="data-field">

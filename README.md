@@ -27,31 +27,22 @@ npm run build
 
 服务器列表文件位于 [public/servers.json](/D:/DUT_Craft/Scripts/DUT_Craft_Servers/public/servers.json)。
 
-推荐使用 `address` 数组格式，每个服务器至少提供一个地址：
+推荐使用简写格式，`address` 直接写地址字符串（默认端口 25565 可省略），多个地址写成数组：
 
 ```json
 [
   {
     "name": "DUT_Craft 大厅",
-    "address": [
-      {
-        "host": "lobby.unsafe.top",
-        "port": 25565
-      }
-    ]
+    "address": "lobby.unsafe.top"
+  },
+  {
+    "name": "DUT_Craft 整合猫",
+    "address": ["hz.utf-8.fun:25563", "mchk.unsafe.top:25563"]
   },
   {
     "name": "DUT_Craft 测试服",
-    "address": [
-      {
-        "host": "test.unsafe.top",
-        "port": 25565
-      },
-      {
-        "host": "test2.unsafe.top",
-        "port": 25566
-      }
-    ]
+    "address": ["test.unsafe.top", "test2.unsafe.top:25566"],
+    "note": "测试用服务器，随时可能变动"
   }
 ]
 ```
@@ -59,12 +50,22 @@ npm run build
 字段说明：
 
 - `name`：页面显示名称
-- `address`：服务器地址列表
-- `host`：服务器域名或 IP
-- `port`：端口，可省略；省略时按默认 `25565` 处理
-- `id`：可选，用于区分同一服务器下的多个地址
+- `address`：地址字符串（`host` 或 `host:port`）或地址数组，数组内字符串与对象可混用
+- `note`：可选备注，显示在卡片标题下方，也可以当作配置里的注释使用
 
-同时兼容旧格式：
+需要给地址单独设置 `id` 时，可以使用对象形式（与简写等价）：
+
+```json
+{
+  "name": "DUT_Craft 测试服",
+  "address": [
+    { "host": "test.unsafe.top" },
+    { "host": "test2.unsafe.top", "port": 25566 }
+  ]
+}
+```
+
+同时兼容旧版平铺格式（`host` / `port` 直接写在条目上）：
 
 ```json
 [
@@ -75,6 +76,12 @@ npm run build
   }
 ]
 ```
+
+## 校验与错误提示
+
+- [public/servers.schema.json](/D:/DUT_Craft/Scripts/DUT_Craft_Servers/public/servers.schema.json) 是列表格式的 JSON Schema，仓库内的 `.vscode/settings.json` 已将其关联到 `servers.json`，用 VS Code 打开即可获得格式校验与字段补全。
+- 页面加载列表失败（文件不存在、JSON 语法错误、没有有效条目）时，会在页面顶部显示错误横幅并回退到内置示例列表，不会再静默显示。
+- 列表中个别条目格式无效时会被忽略，并在横幅中提示忽略了多少条。
 
 ## 说明
 
