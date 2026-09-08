@@ -7,6 +7,9 @@ import barrierIconUrl from "../assets/textures/Barrier.png";
 const GRASS_ICON_URL = grassIconUrl;
 const BARRIER_ICON_URL = barrierIconUrl;
 
+/** 值班玩家列表最多直接展示的人数，其余折叠进 title */
+const CREW_VISIBLE_MAX = 10;
+
 function escapeHtml(input: string): string {
   return input
     .replace(/&/g, "&amp;")
@@ -16,74 +19,57 @@ function escapeHtml(input: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function statusLabel(status: ServerViewModel["status"]): string {
-  if (status === "online") {
-    return "在线";
+function stateLabel(status: ServerViewModel["status"]): string {
+  switch (status) {
+    case "online":
+      return "在线";
+    case "offline":
+      return "离线";
+    case "loading":
+      return "自检中";
+    default:
+      return "故障";
   }
-
-  if (status === "offline") {
-    return "离线";
-  }
-
-  if (status === "loading") {
-    return "加载中";
-  }
-
-  return "错误";
 }
 
-/** 服务器图标标记：错误状态用屏障，无图标用草方块，否则用服务器图标。 */
-function serverIconMarkup(view: ServerViewModel): string {
+/** 单元图标：故障用屏障，无图标用草方块，否则用服务器图标。 */
+function unitIconMarkup(view: ServerViewModel): string {
   if (view.status === "error") {
-    return `<img class="server-icon" src="${BARRIER_ICON_URL}" alt="${escapeHtml(view.name)} 不可用" loading="lazy" />`;
+    return `<img class="unit-icon" src="${BARRIER_ICON_URL}" alt="${escapeHtml(view.name)} 不可用" loading="lazy" />`;
   }
 
   if (view.iconDataUrl) {
-    return `<img class="server-icon" src="${escapeHtml(view.iconDataUrl)}" alt="${escapeHtml(view.name)} 图标" loading="lazy" />`;
+    return `<img class="unit-icon" src="${escapeHtml(view.iconDataUrl)}" alt="${escapeHtml(view.name)} 图标" loading="lazy" />`;
   }
 
-  return `<img class="server-icon" src="${GRASS_ICON_URL}" alt="${escapeHtml(view.name)} 默认图标" loading="lazy" />`;
+  return `<img class="unit-icon" src="${GRASS_ICON_URL}" alt="${escapeHtml(view.name)} 默认图标" loading="lazy" />`;
 }
 
-function playerNamesLabel(view: ServerViewModel): string {
+function crewMarkup(view: ServerViewModel): string {
   if (view.status !== "online") {
-    return "无";
+    return "";
   }
 
-  if (view.playerNames.length === 0) {
-    return "暂无在线玩家";
+  const names = view.playerNames;
+  const anonymous = view.anonymousPlayerCount;
+  if (names.length === 0 && anonymous === 0) {
+    // 无玩家时不渲染整行，读数区的 0/N 已足够表达
+    return "";
   }
 
-  return view.playerNames.join(", ");
+  const visible = names.slice(0, CREW_VISIBLE_MAX).map(escapeHtml).join("、");
+  const more = names.length > CREW_VISIBLE_MAX ? ` 等 ${names.length} 人` : "";
+  const anon = anonymous > 0 ? `、匿名 ×${anonymous}` : "";
+  const fullTitle = escapeHtml(names.join(", ") + (anonymous > 0 ? `, 匿名 ×${anonymous}` : ""));
+
+  return `<p class="unit-crew" title="${fullTitle}"><span class="crew-head">值班</span>${visible}${more}${anon}</p>`;
 }
 
-function playerNamesMarkup(view: ServerViewModel): string {
-  if (view.status !== "online") {
-    return '<span class="player-chip muted">无</span>';
-  }
-
-  if (view.playerNames.length === 0 && view.anonymousPlayerCount === 0) {
-    return '<span class="player-chip muted">暂无在线玩家</span>';
-  }
-
-  const namedChips = view.playerNames.map((name) => `<span class="player-chip">${escapeHtml(name)}</span>`);
-  const anonymousChip =
-    view.anonymousPlayerCount > 0
-      ? `<span class="player-chip muted">匿名玩家 x${view.anonymousPlayerCount}</span>`
-      : "";
-
-  return [...namedChips, anonymousChip].join("");
-}
-
-function addressTitle(addresses: string[]): string {
-  return addresses.join("\n");
-}
-
-function addressMarkup(addresses: string[]): string {
-  return addresses
+function socketsMarkup(view: Pick<ServerViewModel, "addresses">): string {
+  return view.addresses
     .map(
       (item) =>
-        `<button class="address-copy" type="button" data-copy-address="${escapeHtml(item)}" aria-label="复制服务器地址 ${escapeHtml(item)}">${escapeHtml(item)}</button>`
+        `<button class="socket" type="button" data-copy-address="${escapeHtml(item)}" aria-label="复制服务器地址 ${escapeHtml(item)}">${escapeHtml(item)}</button>`
     )
     .join("");
 }
@@ -100,72 +86,80 @@ function toast(message: string): void {
   }, 1400);
 }
 
-export function renderLoadingCard(parent: HTMLElement, id: string, name: string, addresses: string[], note?: string): void {
+/** 单元骨架（开机自检态） */
+export function renderLoadingUnit(
+  parent: HTMLElement,
+  id: string,
+  tag: string,
+  index: number,
+  name: string,
+  addresses: string[],
+  note?: string
+): void {
   const card = document.createElement("article");
-  card.className = "server-card loading";
+  card.className = "unit loading";
   card.dataset.serverId = id;
+  card.style.setProperty("--i", String(index));
   card.innerHTML = `
-    <img class="server-icon" src="${GRASS_ICON_URL}" alt="${escapeHtml(name)} 默认图标" loading="lazy" />
-    <div class="card-body">
-      <header class="card-head">
-        <div class="title-wrap">
+    <div class="unit-rail">
+      <span class="unit-tag">${escapeHtml(tag)}</span>
+      <span class="lamp" aria-hidden="true"></span>
+    </div>
+    <div class="unit-main">
+      <header class="unit-head">
+        <img class="unit-icon" src="${GRASS_ICON_URL}" alt="${escapeHtml(name)} 默认图标" loading="lazy" />
+        <div class="unit-title">
           <h2>${escapeHtml(name)}</h2>
+          ${note ? `<p class="unit-note">${escapeHtml(note)}</p>` : ""}
         </div>
-        <span class="status-pill loading"><span class="dot" aria-hidden="true"></span>加载中</span>
+        <span class="unit-state">自检中</span>
       </header>
-      ${note ? `<p class="card-note">${escapeHtml(note)}</p>` : ""}
-      <p class="address" title="${escapeHtml(addressTitle(addresses))}">${addresses.map((item) => escapeHtml(item)).join("<br>")}</p>
-      <div class="line shimmer"></div>
-      <div class="line shimmer short"></div>
+      <div class="unit-motd" title="${escapeHtml(addresses.join("\n"))}"></div>
+      <div class="unit-foot">
+        <div class="readout"><span class="readout-value">--/--</span><span class="readout-label">玩家</span></div>
+        <div class="readout"><span class="readout-value">--</span><span class="readout-label">版本</span></div>
+        <div class="sockets">${socketsMarkup({ addresses })}</div>
+        <button class="unit-sync" type="button" aria-label="刷新服务器 ${escapeHtml(name)}">⟳</button>
+      </div>
     </div>
   `;
   parent.appendChild(card);
+  bindSockets(card);
 }
 
-export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): void {
+/** 单元内容更新（保留元素本身，避免重启开机动画） */
+export function upsertServerUnit(parent: HTMLElement, view: ServerViewModel, tag: string): void {
   const existing = parent.querySelector<HTMLElement>(`[data-server-id="${view.id}"]`);
   const card = existing ?? document.createElement("article");
 
-  card.className = `server-card ${view.status}`;
+  card.className = `unit ${view.status}`;
   card.dataset.serverId = view.id;
   card.innerHTML = `
-    ${serverIconMarkup(view)}
-    <div class="card-body">
-      <header class="card-head">
-        <div class="title-wrap">
+    <div class="unit-rail">
+      <span class="unit-tag">${escapeHtml(tag)}</span>
+      <span class="lamp" aria-hidden="true"></span>
+    </div>
+    <div class="unit-main">
+      <header class="unit-head">
+        ${unitIconMarkup(view)}
+        <div class="unit-title">
           <h2>${escapeHtml(view.name)}</h2>
+          ${view.note ? `<p class="unit-note">${escapeHtml(view.note)}</p>` : ""}
         </div>
-        <span class="status-pill ${view.status}"><span class="dot" aria-hidden="true"></span>${statusLabel(view.status)}</span>
+        <span class="unit-state">${stateLabel(view.status)}</span>
       </header>
 
-      ${view.note ? `<p class="card-note">${escapeHtml(view.note)}</p>` : ""}
+      <div class="unit-motd" title="${escapeHtml(view.motdText)}">${view.motdHtml ?? escapeHtml(view.motdText)}</div>
 
-      <div class="data-row">
-        <div class="data-field">
-          <span class="label">在线人数</span>
-          <span class="value">${escapeHtml(view.playersText)}</span>
-        </div>
-        <div class="data-field">
-          <span class="label">版本</span>
-          <span class="value">${escapeHtml(view.version)}</span>
-        </div>
+      ${view.errorText ? `<p class="unit-error">${escapeHtml(view.errorText)}</p>` : ""}
+      ${crewMarkup(view)}
+
+      <div class="unit-foot">
+        <div class="readout"><span class="readout-value">${escapeHtml(view.playersText)}</span><span class="readout-label">玩家</span></div>
+        <div class="readout"><span class="readout-value" title="${escapeHtml(view.version)}">${escapeHtml(view.version)}</span><span class="readout-label">版本</span></div>
+        <div class="sockets">${socketsMarkup(view)}</div>
+        <button class="unit-sync" type="button" aria-label="刷新服务器 ${escapeHtml(view.name)}">⟳</button>
       </div>
-
-      <div class="data-row players-row underset">
-        <span class="label">在线玩家</span>
-        <span class="value" title="${escapeHtml(playerNamesLabel(view))}">${playerNamesMarkup(view)}</span>
-      </div>
-
-      <div class="motd" title="${escapeHtml(view.motdText)}">${view.motdHtml ?? escapeHtml(view.motdText)}</div>
-
-      <div class="copy-row">
-        <div class="address-list" title="${escapeHtml(addressTitle(view.addresses))}">${addressMarkup(view.addresses)}</div>
-        <div class="button-row">
-          <button class="refresh-card-btn" type="button" aria-label="刷新服务器 ${escapeHtml(view.name)}">刷新</button>
-        </div>
-      </div>
-
-      ${view.errorText ? `<p class="error-text">${escapeHtml(view.errorText)}</p>` : ""}
     </div>
   `;
 
@@ -173,13 +167,20 @@ export function upsertServerCard(parent: HTMLElement, view: ServerViewModel): vo
     parent.appendChild(card);
   }
 
-  const addressButtons = card.querySelectorAll<HTMLButtonElement>(".address-copy");
-  for (const button of addressButtons) {
+  bindSockets(card);
+}
+
+function bindSockets(card: HTMLElement): void {
+  const buttons = card.querySelectorAll<HTMLButtonElement>(".socket");
+  for (const button of buttons) {
     button.onclick = async () => {
-      const value = button.dataset.copyAddress ?? view.address;
+      const value = button.dataset.copyAddress ?? "";
+      if (!value) {
+        return;
+      }
       try {
         await navigator.clipboard.writeText(value);
-        toast(`已复制: ${value}`);
+        toast(`已复制 ${value}`);
       } catch {
         toast("复制失败，请手动复制");
       }

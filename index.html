@@ -3,15 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DUT_Craft 服务器状态查询</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
+    <title>DUT_Craft · 服务器机房</title>
     <link rel="stylesheet" href="/src/styles.css" />
-    <!-- 防 FOUC：在样式应用前根据存储/系统偏好锁定主题 -->
+    <!-- 防 FOUC：在样式应用前根据存储/系统偏好锁定主题（与 theme.ts 共用 key "dutcraft-theme"） -->
     <script>
       (function () {
         try {
@@ -26,49 +20,58 @@
     </script>
   </head>
   <body>
-    <!-- 背景动画舞台：dark 与 light 两套对照层，由 CSS 按主题显隐 -->
-    <div class="bg-stage" aria-hidden="true">
-      <!-- 月夜星咏（dark）-->
-      <div class="stars"></div>
-      <div class="stars-mid"></div>
-      <div class="stars-far"></div>
-      <div class="moon"></div>
-      <!-- 流星由 theme.ts 按随机数量/间隔动态生成 -->
-      <!-- 晴空日照（light）-->
-      <div class="sun"></div>
-    </div>
+    <!-- 噪点颗粒覆层：给两种主题都加上一层材质 -->
+    <div class="grain" aria-hidden="true"></div>
 
-    <main class="layout">
-      <!-- 配置问题提示：servers.json 加载失败或含无效条目时由 main.ts 填充 -->
-      <div id="config-banner" class="config-banner" hidden></div>
-      <header class="hero">
-        <div class="hero-top">
-          <h1>DUT Craft 服务器列表</h1>
-          <div class="theme-switch">
-            <span class="theme-name" id="theme-name" aria-hidden="true"></span>
-            <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">
-              <span class="icon-moon" aria-hidden="true">🌙</span>
-              <span class="icon-sun" aria-hidden="true">☀️</span>
+    <main class="room">
+      <!-- 配置告警胶带：servers.json 加载失败或含无效条目时由 main.ts 填充 -->
+      <div id="config-banner" class="alarm-tape" hidden></div>
+
+      <header class="console">
+        <div class="console-top">
+          <div class="nameplate">
+            <h1>DUT_CRAFT</h1>
+            <p class="plate-sub"><span class="sub-cn">服务器状态机房</span><span class="sub-en">REDSTONE&nbsp;SERVER&nbsp;ROOM</span></p>
+          </div>
+          <div class="console-side">
+            <div class="clock" role="timer" aria-label="值班时钟">
+              <span id="clock-time" class="clock-time">--:--:--</span>
+            </div>
+            <button id="theme-toggle" class="shift-toggle" type="button" aria-label="切换明暗主题（交接班）" title="切换明暗主题（交接班）">
+              <span class="shift-led" aria-hidden="true"></span>
+              <span id="shift-name" class="shift-name">夜班</span>
             </button>
           </div>
         </div>
-        <button id="refresh-all" class="refresh-button" type="button" aria-label="刷新所有服务器状态">
-          刷新全部服务器
-        </button>
+
+        <div class="console-stats">
+          <div class="stat">
+            <span class="stat-value" id="stat-units">--</span>
+            <span class="stat-label">设备 UNITS</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="stat-online">--</span>
+            <span class="stat-label">在线 ONLINE</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="stat-players">--</span>
+            <span class="stat-label">玩家 PLAYERS</span>
+          </div>
+          <div class="sync-block">
+            <button id="refresh-all" class="sync-all" type="button" aria-label="刷新所有服务器状态">
+              <span class="sync-glyph" aria-hidden="true">⟳</span>同步全部
+            </button>
+            <span id="last-sync" class="last-sync">上次同步 --:--:--</span>
+          </div>
+        </div>
       </header>
 
-      <section>
-        <div id="status-board" class="server-grid" aria-live="polite"></div>
-      </section>
+      <section class="rack" id="status-board" aria-live="polite"></section>
 
-      <footer class="site-footer">
-        <div>
-          <span>API：</span>
-          <a class="api-link" href="https://api.mcsrvstat.us/2" target="_blank" rel="noreferrer noopener">
-            https://api.mcsrvstat.us/2
-          </a>
-        </div>
-        <div>查询状态会缓存 2 分钟，可能不是最新数据</div>
+      <footer class="room-footer">
+        <span class="footer-pair"><span class="footer-key">DATA</span>api.mcsrvstat.us</span>
+        <span class="footer-pair"><span class="footer-key">CACHE</span>接口约缓存 5 分钟，数据未必实时</span>
+        <span class="footer-pair"><span class="footer-key">SHIFT</span>夜班 · 白班 轮值中</span>
       </footer>
     </main>
 
